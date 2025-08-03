@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Models ---
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  accounts     Account[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+  goals        Goal[]
+  bills        Bill[]
+}
+
+model Account {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  type          String
+  currency      String // ISO 4217 code
+  institution   String?
+  numberMasked  String?
+  color         String?
+  icon          String?
+  balanceCached Int? // cents
+  createdAt     DateTime @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  bills        Bill[]
+
+  @@index([userId])
+}
+
+model Category {
+  id     String       @id @default(cuid())
+  userId String
+  name   String
+  kind   CategoryKind
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budgets Budget[]
+  txns    Transaction[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+enum CategoryKind {
+  income
+  expense
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  accountId   String
+  categoryId  String?
+  amount      Int // cents
+  date        DateTime
+  payee       String?
+  notes       String?
+  isRecurring Boolean  @default(false)
+  rrule       String?
+  createdAt   DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account  Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([userId, date])
+  @@index([userId, categoryId])
+  @@index([userId, accountId])
+}
+
+model Budget {
+  id            String   @id @default(cuid())
+  userId        String
+  month         DateTime // first day of month in UTC
+  categoryId    String
+  plannedAmount Int // cents
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, categoryId])
+  @@index([userId, categoryId])
+}
+
+model Goal {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  targetAmount   Int // cents
+  targetDate     DateTime?
+  progressCached Int? // cents
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Bill {
+  id        String  @id @default(cuid())
+  userId    String
+  name      String
+  amount    Int // cents
+  dueDay    Int // 1-28/30/31
+  autopay   Boolean @default(false)
+  accountId String?
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account? @relation(fields: [accountId], references: [id])
+
+  @@index([userId])
+}
