@@ -4,40 +4,25 @@
 import '@testing-library/jest-dom';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { PREDEFINED_CATEGORIES } from '@/lib/category-constants';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES, ALL_CATEGORIES, getCategoryVisual } from '@/lib/category-constants';
 
 describe('Category Constants', () => {
-  describe('PREDEFINED_CATEGORIES', () => {
+  describe('EXPENSE_CATEGORIES', () => {
     it('should have expense categories', () => {
-      const expenseCategories = PREDEFINED_CATEGORIES.filter(cat => cat.type === 'EXPENSE');
-      expect(expenseCategories.length).toBeGreaterThan(0);
+      expect(EXPENSE_CATEGORIES.length).toBeGreaterThan(0);
       
       // Check that common expense categories exist
-      const categoryNames = expenseCategories.map(cat => cat.name);
+      const categoryNames = EXPENSE_CATEGORIES.map(cat => cat.name);
       expect(categoryNames).toContain('Groceries');
       expect(categoryNames).toContain('Transportation');
       expect(categoryNames).toContain('Entertainment');
     });
 
-    it('should have income categories', () => {
-      const incomeCategories = PREDEFINED_CATEGORIES.filter(cat => cat.type === 'INCOME');
-      expect(incomeCategories.length).toBeGreaterThan(0);
-      
-      // Check that common income categories exist
-      const categoryNames = incomeCategories.map(cat => cat.name);
-      expect(categoryNames).toContain('Salary');
-      expect(categoryNames).toContain('Freelance');
-    });
-
     it('should have required properties for each category', () => {
-      PREDEFINED_CATEGORIES.forEach(category => {
+      EXPENSE_CATEGORIES.forEach(category => {
         expect(category).toHaveProperty('name');
-        expect(category).toHaveProperty('type');
         expect(category).toHaveProperty('color');
         expect(category).toHaveProperty('icon');
-        
-        // Check that type is valid
-        expect(['INCOME', 'EXPENSE']).toContain(category.type);
         
         // Check that name and color are non-empty strings
         expect(typeof category.name).toBe('string');
@@ -48,179 +33,111 @@ describe('Category Constants', () => {
         expect(category.icon.length).toBeGreaterThan(0);
       });
     });
+  });
 
-    it('should have unique category names', () => {
-      const names = PREDEFINED_CATEGORIES.map(cat => cat.name);
-      const uniqueNames = new Set(names);
-      expect(uniqueNames.size).toBe(names.length);
+  describe('INCOME_CATEGORIES', () => {
+    it('should have income categories', () => {
+      expect(INCOME_CATEGORIES.length).toBeGreaterThan(0);
+      
+      // Check that common income categories exist
+      const categoryNames = INCOME_CATEGORIES.map(cat => cat.name);
+      expect(categoryNames).toContain('Salary');
+      expect(categoryNames).toContain('Freelance');
     });
 
-    it('should have valid color formats', () => {
-      PREDEFINED_CATEGORIES.forEach(category => {
-        // Check if color is a valid CSS color (hex, named color, etc.)
-        // For now, just check it's a non-empty string
-        expect(category.color).toBeTruthy();
+    it('should have required properties for each category', () => {
+      INCOME_CATEGORIES.forEach(category => {
+        expect(category).toHaveProperty('name');
+        expect(category).toHaveProperty('color');
+        expect(category).toHaveProperty('icon');
+        
+        // Check that name and color are non-empty strings
+        expect(typeof category.name).toBe('string');
+        expect(category.name.length).toBeGreaterThan(0);
         expect(typeof category.color).toBe('string');
+        expect(category.color.length).toBeGreaterThan(0);
+        expect(typeof category.icon).toBe('string');
+        expect(category.icon.length).toBeGreaterThan(0);
       });
     });
   });
-});
 
-describe('Category Component Logic', () => {
-  it('should render category with correct styling', () => {
-    const mockCategory = {
-      id: '1',
-      name: 'Groceries',
-      type: 'EXPENSE' as const,
-      color: 'emerald',
-      icon: '🛒',
-      userId: 'test-user-1',
-    };
-
-    // Create a simple component to test category display
-    const CategoryDisplay = () => (
-      <div data-testid="category-display">
-        <span data-testid="category-name">{mockCategory.name}</span>
-        <span data-testid="category-type">{mockCategory.type}</span>
-        <span data-testid="category-icon">{mockCategory.icon}</span>
-        <span data-testid="category-color" className={`bg-${mockCategory.color}-100`}>
-          {mockCategory.color}
-        </span>
-      </div>
-    );
-
-    render(<CategoryDisplay />);
-
-    expect(screen.getByTestId('category-name')).toHaveTextContent('Groceries');
-    expect(screen.getByTestId('category-type')).toHaveTextContent('EXPENSE');
-    expect(screen.getByTestId('category-icon')).toHaveTextContent('🛒');
-    expect(screen.getByTestId('category-color')).toHaveTextContent('emerald');
-  });
-
-  it('should handle income vs expense categorization', () => {
-    const incomeCategory = {
-      name: 'Salary',
-      type: 'INCOME' as const,
-      color: 'green',
-      icon: '💰',
-    };
-
-    const expenseCategory = {
-      name: 'Groceries',
-      type: 'EXPENSE' as const,
-      color: 'red',
-      icon: '🛒',
-    };
-
-    const CategoryTypeDisplay = ({ category }: { category: typeof incomeCategory }) => (
-      <div data-testid="category-type-display">
-        <span data-testid="category-name">{category.name}</span>
-        <span data-testid="category-type-badge" className={
-          category.type === 'INCOME' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }>
-          {category.type}
-        </span>
-      </div>
-    );
-
-    const { rerender } = render(<CategoryTypeDisplay category={incomeCategory} />);
-    
-    expect(screen.getByTestId('category-name')).toHaveTextContent('Salary');
-    expect(screen.getByTestId('category-type-badge')).toHaveTextContent('INCOME');
-    expect(screen.getByTestId('category-type-badge')).toHaveClass('bg-green-100', 'text-green-800');
-
-    rerender(<CategoryTypeDisplay category={expenseCategory} />);
-    
-    expect(screen.getByTestId('category-name')).toHaveTextContent('Groceries');
-    expect(screen.getByTestId('category-type-badge')).toHaveTextContent('EXPENSE');
-    expect(screen.getByTestId('category-type-badge')).toHaveClass('bg-red-100', 'text-red-800');
-  });
-
-  it('should handle empty category list', () => {
-    const EmptyCategoryState = () => (
-      <div data-testid="empty-categories">
-        <p>No categories found</p>
-        <p>Create your first category</p>
-      </div>
-    );
-
-    render(<EmptyCategoryState />);
-
-    expect(screen.getByText('No categories found')).toBeInTheDocument();
-    expect(screen.getByText('Create your first category')).toBeInTheDocument();
-  });
-
-  it('should filter categories by type', () => {
-    const categories = [
-      { id: '1', name: 'Salary', type: 'INCOME' as const },
-      { id: '2', name: 'Groceries', type: 'EXPENSE' as const },
-      { id: '3', name: 'Freelance', type: 'INCOME' as const },
-      { id: '4', name: 'Transportation', type: 'EXPENSE' as const },
-    ];
-
-    const CategoryFilter = ({ filterType }: { filterType: 'INCOME' | 'EXPENSE' }) => {
-      const filteredCategories = categories.filter(cat => cat.type === filterType);
+  describe('ALL_CATEGORIES', () => {
+    it('should contain both expense and income categories', () => {
+      expect(ALL_CATEGORIES.length).toBe(EXPENSE_CATEGORIES.length + INCOME_CATEGORIES.length);
       
-      return (
-        <div data-testid={`${filterType.toLowerCase()}-categories`}>
-          {filteredCategories.map(category => (
-            <div key={category.id} data-testid={`category-${category.id}`}>
-              {category.name}
-            </div>
-          ))}
-        </div>
-      );
-    };
+      // Check that it contains categories from both types
+      const allNames = ALL_CATEGORIES.map(cat => cat.name);
+      expect(allNames).toContain('Groceries'); // expense
+      expect(allNames).toContain('Salary'); // income
+    });
 
-    const { rerender } = render(<CategoryFilter filterType="INCOME" />);
-    
-    expect(screen.getByTestId('income-categories')).toBeInTheDocument();
-    expect(screen.getByTestId('category-1')).toHaveTextContent('Salary');
-    expect(screen.getByTestId('category-3')).toHaveTextContent('Freelance');
-    expect(screen.queryByTestId('category-2')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('category-4')).not.toBeInTheDocument();
+    it('should have no duplicate names', () => {
+      const names = ALL_CATEGORIES.map(cat => cat.name);
+      const uniqueNames = [...new Set(names)];
+      expect(names.length).toBe(uniqueNames.length);
+    });
+  });
 
-    rerender(<CategoryFilter filterType="EXPENSE" />);
-    
-    expect(screen.getByTestId('expense-categories')).toBeInTheDocument();
-    expect(screen.getByTestId('category-2')).toHaveTextContent('Groceries');
-    expect(screen.getByTestId('category-4')).toHaveTextContent('Transportation');
-    expect(screen.queryByTestId('category-1')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('category-3')).not.toBeInTheDocument();
+  describe('getCategoryVisual', () => {
+    it('should return visual info for existing categories', () => {
+      const expenseVisual = getCategoryVisual('Groceries', 'expense');
+      expect(expenseVisual).toEqual({
+        icon: '🛒',
+        color: '#10b981'
+      });
+
+      const incomeVisual = getCategoryVisual('Salary', 'income');
+      expect(incomeVisual).toEqual({
+        icon: '💼',
+        color: '#059669'
+      });
+    });
+
+    it('should return null for unknown categories', () => {
+      const unknownVisual = getCategoryVisual('Unknown Category', 'expense');
+      expect(unknownVisual).toBeNull();
+    });
   });
 });
 
-describe('Category Validation Logic', () => {
-  it('should validate category names', () => {
-    const validateCategoryName = (name: string) => {
-      if (!name || name.trim().length === 0) {
-        return 'Category name is required';
-      }
-      if (name.trim().length < 2) {
-        return 'Category name must be at least 2 characters';
-      }
-      if (name.trim().length > 50) {
-        return 'Category name must be less than 50 characters';
-      }
-      return null;
-    };
+describe('Category Component Integration', () => {
+  // Mock a simple CategoryDisplay component for testing
+  const CategoryDisplay = ({ name, kind }: { name: string; kind: 'income' | 'expense' }) => {
+    const visual = getCategoryVisual(name, kind);
+    const { icon, color } = visual || { icon: '📁', color: '#6b7280' };
+    return (
+      <div data-testid="category-display">
+        <span style={{ color }}>{icon}</span>
+        <span>{name}</span>
+      </div>
+    );
+  };
 
-    expect(validateCategoryName('')).toBe('Category name is required');
-    expect(validateCategoryName('   ')).toBe('Category name is required');
-    expect(validateCategoryName('A')).toBe('Category name must be at least 2 characters');
-    expect(validateCategoryName('Valid Category')).toBeNull();
-    expect(validateCategoryName('A'.repeat(51))).toBe('Category name must be less than 50 characters');
+  it('should render expense category with correct visual', () => {
+    render(<CategoryDisplay name="Groceries" kind="expense" />);
+    
+    const display = screen.getByTestId('category-display');
+    expect(display).toBeInTheDocument();
+    expect(display).toHaveTextContent('🛒');
+    expect(display).toHaveTextContent('Groceries');
   });
 
-  it('should validate category type', () => {
-    const validateCategoryType = (type: string) => {
-      const validTypes = ['INCOME', 'EXPENSE'];
-      return validTypes.includes(type) ? null : 'Invalid category type';
-    };
+  it('should render income category with correct visual', () => {
+    render(<CategoryDisplay name="Salary" kind="income" />);
+    
+    const display = screen.getByTestId('category-display');
+    expect(display).toBeInTheDocument();
+    expect(display).toHaveTextContent('💼');
+    expect(display).toHaveTextContent('Salary');
+  });
 
-    expect(validateCategoryType('INCOME')).toBeNull();
-    expect(validateCategoryType('EXPENSE')).toBeNull();
-    expect(validateCategoryType('INVALID')).toBe('Invalid category type');
-    expect(validateCategoryType('')).toBe('Invalid category type');
+  it('should render unknown category with default visual', () => {
+    render(<CategoryDisplay name="Unknown" kind="expense" />);
+    
+    const display = screen.getByTestId('category-display');
+    expect(display).toBeInTheDocument();
+    expect(display).toHaveTextContent('📁');
+    expect(display).toHaveTextContent('Unknown');
   });
 });

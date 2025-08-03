@@ -15,6 +15,7 @@ import { DeleteTransactionButton } from "./delete-transaction-button";
 import { QuickAddTransaction } from "./quick-add-transaction";
 import { formatTransactionAmount } from "@/lib/transaction-utils";
 import { getCategoryVisual } from "@/lib/category-constants";
+import AuthenticatedLayout from "@/components/auth/authenticated-layout";
 
 export const metadata = {
   title: "Transactions",
@@ -164,8 +165,10 @@ async function TransactionsList({ searchParams }: TransactionsListProps) {
 
 export default function TransactionsPage(props: TransactionsListProps) {
   return (
-    <Suspense fallback={<div>Loading transactions...</div>}>
-      <TransactionsList {...props} />
-    </Suspense>
+    <AuthenticatedLayout>
+      <Suspense fallback={<div>Loading transactions...</div>}>
+        <TransactionsList {...props} />
+      </Suspense>
+    </AuthenticatedLayout>
   );
 }

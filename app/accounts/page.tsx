@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { getAccounts } from "./actions";
 import { DeleteAccountButton } from "./delete-account-button";
+import AuthenticatedLayout from "@/components/auth/authenticated-layout";
 
 export const metadata = {
   title: "Accounts",
@@ -113,8 +114,10 @@ async function AccountsList() {
 
 export default function AccountsPage() {
   return (
-    <Suspense fallback={<div>Loading accounts...</div>}>
-      <AccountsList />
-    </Suspense>
+    <AuthenticatedLayout>
+      <Suspense fallback={<div>Loading accounts...</div>}>
+        <AccountsList />
+      </Suspense>
+    </AuthenticatedLayout>
   );
 }

@@ -14,6 +14,7 @@ import {
 import { getCategories } from "./actions";
 import { DeleteCategoryButton } from "./delete-category-button";
 import { getCategoryVisual } from "@/lib/category-constants";
+import AuthenticatedLayout from "@/components/auth/authenticated-layout";
 
 export const metadata = {
   title: "Categories",
@@ -134,8 +135,10 @@ async function CategoriesList() {
 
 export default function CategoriesPage() {
   return (
-    <Suspense fallback={<div>Loading categories...</div>}>
-      <CategoriesList />
-    </Suspense>
+    <AuthenticatedLayout>
+      <Suspense fallback={<div>Loading categories...</div>}>
+        <CategoriesList />
+      </Suspense>
+    </AuthenticatedLayout>
   );
 }
