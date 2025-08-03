@@ -1,4 +1,5 @@
 import type { NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import prisma from "./db";
@@ -31,3 +32,18 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
 };
+
+export async function getCurrentUser() {
+  const session = await getServerSession(authOptions);
+  
+  // For development: if no session, use the first user from seed data
+  if (!session?.user) {
+    const firstUser = await prisma.user.findFirst();
+    if (firstUser) {
+      console.log("⚠️ Using first user for development (no auth session)");
+      return { id: firstUser.id, email: firstUser.email };
+    }
+  }
+  
+  return session?.user as { id: string; email: string } | null;
+}
