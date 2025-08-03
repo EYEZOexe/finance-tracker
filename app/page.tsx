@@ -25,11 +25,11 @@ export default function Page() {
           </Link>
         </Button>
         
-        <Button asChild variant="outline" className="h-24 flex flex-col gap-2" disabled>
-          <div>
+        <Button asChild className="h-24 flex flex-col gap-2">
+          <Link href="/transactions">
             <span className="text-2xl">💳</span>
-            <span>Transactions (Coming Soon)</span>
-          </div>
+            <span>Transactions</span>
+          </Link>
         </Button>
       </div>
     </main>
